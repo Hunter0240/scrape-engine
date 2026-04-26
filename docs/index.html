@@ -5,167 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Scrape Engine -- Documentation</title>
   <meta name="description" content="A configurable web scraping engine. Define targets in YAML, the engine handles fetching, parsing, dedup, storage, and notifications.">
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root,
     :root[data-theme="slate"] {
-      --text-primary: #1b2a4a;
-      --text-secondary: #475569;
-      --surface: #f8fafc;
-      --surface-alt: #f1f5f9;
-      --border: #cbd5e1;
-      --border-subtle: #e2e8f0;
-      --accent: #3b6eb5;
-      --accent-subtle: #dbeafe;
-      --color-fetch: #2563a8;
-      --color-parse: #7c3aed;
-      --color-clean: #0891b2;
-      --color-dedup: #d97706;
-      --color-store: #16a34a;
-      --code-bg: #e8edf4;
-      --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --text-primary: oklch(0.18 0.01 250);
+      --text-secondary: oklch(0.45 0.01 250);
+      --surface: oklch(0.985 0.003 250);
+      --surface-alt: oklch(0.965 0.004 250);
+      --border: oklch(0.88 0.006 250);
+      --border-subtle: oklch(0.93 0.004 250);
+      --accent: oklch(0.55 0.18 255);
+      --accent-subtle: oklch(0.95 0.02 255);
+      --color-stage-1: oklch(0.6 0.12 195);
+      --color-stage-2: oklch(0.55 0.16 260);
+      --color-fetch: var(--color-stage-1);
+      --color-parse: var(--color-stage-2);
+      --color-clean: var(--color-stage-1);
+      --color-dedup: var(--color-stage-2);
+      --color-store: var(--color-stage-1);
+      --color-req: oklch(0.75 0.15 80);
+      --code-bg: oklch(0.965 0.004 250);
+      --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', monospace;
     }
 
     :root[data-theme="stone"] {
-      --text-primary: #292524;
-      --text-secondary: #57534e;
-      --surface: #fafaf9;
-      --surface-alt: #f5f5f4;
-      --border: #d6d3d1;
-      --border-subtle: #e7e5e4;
-      --accent: #8b6c3e;
-      --accent-subtle: #f5f0e8;
-      --color-fetch: #78716c;
-      --color-parse: #7c6a4e;
-      --color-clean: #5c8a7a;
-      --color-dedup: #9a7b4f;
-      --color-store: #4d7c5f;
-      --code-bg: #ece8e3;
+      --text-primary: oklch(0.2 0.015 50);
+      --text-secondary: oklch(0.45 0.015 50);
+      --surface: oklch(0.975 0.006 70);
+      --surface-alt: oklch(0.955 0.008 70);
+      --border: oklch(0.85 0.01 70);
+      --border-subtle: oklch(0.9 0.007 70);
+      --accent: oklch(0.55 0.15 50);
+      --accent-subtle: oklch(0.94 0.02 50);
+      --color-stage-1: oklch(0.58 0.1 165);
+      --color-stage-2: oklch(0.55 0.12 55);
+      --color-req: oklch(0.72 0.14 70);
+      --code-bg: oklch(0.955 0.008 70);
     }
 
     :root[data-theme="carbon"] {
-      --text-primary: #0f172a;
-      --text-secondary: #334155;
-      --surface: #fcfcfd;
-      --surface-alt: #f4f5f7;
-      --border: #c4c8d0;
-      --border-subtle: #dfe1e6;
-      --accent: #4338ca;
-      --accent-subtle: #e0e7ff;
-      --color-fetch: #3730a3;
-      --color-parse: #6d28d9;
-      --color-clean: #0e7490;
-      --color-dedup: #b45309;
-      --color-store: #166534;
-      --code-bg: #ebedf2;
+      --text-primary: oklch(0.12 0.005 250);
+      --text-secondary: oklch(0.35 0.008 250);
+      --surface: oklch(0.995 0.001 250);
+      --surface-alt: oklch(0.965 0.002 250);
+      --border: oklch(0.82 0.004 250);
+      --border-subtle: oklch(0.9 0.002 250);
+      --accent: oklch(0.5 0.22 255);
+      --accent-subtle: oklch(0.95 0.03 255);
+      --color-stage-1: oklch(0.55 0.12 185);
+      --color-stage-2: oklch(0.5 0.18 270);
+      --color-req: oklch(0.65 0.18 80);
+      --code-bg: oklch(0.965 0.002 250);
     }
 
     @media (prefers-color-scheme: dark) {
       :root:not([data-mode="light"]),
       :root[data-theme="slate"]:not([data-mode="light"]) {
-        --text-primary: #e2e8f0;
-        --text-secondary: #94a3b8;
-        --surface: #0f172a;
-        --surface-alt: #1e293b;
-        --border: #334155;
-        --border-subtle: #283548;
-        --accent: #60a5fa;
-        --accent-subtle: #1e3a5f;
-        --color-fetch: #60a5fa;
-        --color-parse: #a78bfa;
-        --color-clean: #22d3ee;
-        --color-dedup: #fbbf24;
-        --color-store: #4ade80;
-        --code-bg: #1e293b;
+        --text-primary: oklch(0.92 0.005 250);
+        --text-secondary: oklch(0.65 0.008 250);
+        --surface: oklch(0.14 0.008 250);
+        --surface-alt: oklch(0.18 0.008 250);
+        --border: oklch(0.28 0.008 250);
+        --border-subtle: oklch(0.22 0.006 250);
+        --accent: oklch(0.65 0.18 255);
+        --accent-subtle: oklch(0.2 0.04 255);
+        --color-stage-1: oklch(0.7 0.12 195);
+        --color-stage-2: oklch(0.65 0.16 260);
+        --color-req: oklch(0.8 0.13 80);
+        --code-bg: oklch(0.18 0.008 250);
       }
     }
     :root[data-mode="dark"],
     :root[data-theme="slate"][data-mode="dark"] {
-      --text-primary: #e2e8f0;
-      --text-secondary: #94a3b8;
-      --surface: #0f172a;
-      --surface-alt: #1e293b;
-      --border: #334155;
-      --border-subtle: #283548;
-      --accent: #60a5fa;
-      --accent-subtle: #1e3a5f;
-      --color-fetch: #60a5fa;
-      --color-parse: #a78bfa;
-      --color-clean: #22d3ee;
-      --color-dedup: #fbbf24;
-      --color-store: #4ade80;
-      --code-bg: #1e293b;
+      --text-primary: oklch(0.92 0.005 250);
+      --text-secondary: oklch(0.65 0.008 250);
+      --surface: oklch(0.14 0.008 250);
+      --surface-alt: oklch(0.18 0.008 250);
+      --border: oklch(0.28 0.008 250);
+      --border-subtle: oklch(0.22 0.006 250);
+      --accent: oklch(0.65 0.18 255);
+      --accent-subtle: oklch(0.2 0.04 255);
+      --color-stage-1: oklch(0.7 0.12 195);
+      --color-stage-2: oklch(0.65 0.16 260);
+      --color-req: oklch(0.8 0.13 80);
+      --code-bg: oklch(0.18 0.008 250);
     }
 
     @media (prefers-color-scheme: dark) {
       :root[data-theme="stone"]:not([data-mode="light"]) {
-        --text-primary: #e7e5e4;
-        --text-secondary: #a8a29e;
-        --surface: #1c1917;
-        --surface-alt: #292524;
-        --border: #44403c;
-        --border-subtle: #352f2b;
-        --accent: #d4a574;
-        --accent-subtle: #3d2e1a;
-        --color-fetch: #a8a29e;
-        --color-parse: #c4a882;
-        --color-clean: #6ee7a0;
-        --color-dedup: #d4a574;
-        --color-store: #6ee7a0;
-        --code-bg: #292524;
+        --text-primary: oklch(0.9 0.008 70);
+        --text-secondary: oklch(0.65 0.01 70);
+        --surface: oklch(0.15 0.01 50);
+        --surface-alt: oklch(0.19 0.01 50);
+        --border: oklch(0.3 0.01 50);
+        --border-subtle: oklch(0.23 0.008 50);
+        --accent: oklch(0.65 0.15 50);
+        --accent-subtle: oklch(0.22 0.03 50);
+        --color-stage-1: oklch(0.7 0.1 165);
+        --color-stage-2: oklch(0.68 0.12 55);
+        --color-req: oklch(0.78 0.12 70);
+        --code-bg: oklch(0.19 0.01 50);
       }
     }
     :root[data-theme="stone"][data-mode="dark"] {
-      --text-primary: #e7e5e4;
-      --text-secondary: #a8a29e;
-      --surface: #1c1917;
-      --surface-alt: #292524;
-      --border: #44403c;
-      --border-subtle: #352f2b;
-      --accent: #d4a574;
-      --accent-subtle: #3d2e1a;
-      --color-fetch: #a8a29e;
-      --color-parse: #c4a882;
-      --color-clean: #6ee7a0;
-      --color-dedup: #d4a574;
-      --color-store: #6ee7a0;
-      --code-bg: #292524;
+      --text-primary: oklch(0.9 0.008 70);
+      --text-secondary: oklch(0.65 0.01 70);
+      --surface: oklch(0.15 0.01 50);
+      --surface-alt: oklch(0.19 0.01 50);
+      --border: oklch(0.3 0.01 50);
+      --border-subtle: oklch(0.23 0.008 50);
+      --accent: oklch(0.65 0.15 50);
+      --accent-subtle: oklch(0.22 0.03 50);
+      --color-stage-1: oklch(0.7 0.1 165);
+      --color-stage-2: oklch(0.68 0.12 55);
+      --color-req: oklch(0.78 0.12 70);
+      --code-bg: oklch(0.19 0.01 50);
     }
 
     @media (prefers-color-scheme: dark) {
       :root[data-theme="carbon"]:not([data-mode="light"]) {
-        --text-primary: #e4e4ed;
-        --text-secondary: #9e9eb8;
-        --surface: #131320;
-        --surface-alt: #1a1a2e;
-        --border: #2a2a40;
-        --border-subtle: #222238;
-        --accent: #818cf8;
-        --accent-subtle: #2a2a50;
-        --color-fetch: #818cf8;
-        --color-parse: #a78bfa;
-        --color-clean: #22d3ee;
-        --color-dedup: #fbbf24;
-        --color-store: #4ade80;
-        --code-bg: #1e1e32;
+        --text-primary: oklch(0.93 0.004 250);
+        --text-secondary: oklch(0.7 0.006 250);
+        --surface: oklch(0.12 0.005 250);
+        --surface-alt: oklch(0.16 0.005 250);
+        --border: oklch(0.25 0.006 250);
+        --border-subtle: oklch(0.2 0.004 250);
+        --accent: oklch(0.7 0.2 255);
+        --accent-subtle: oklch(0.18 0.04 255);
+        --color-stage-1: oklch(0.7 0.12 185);
+        --color-stage-2: oklch(0.68 0.18 270);
+        --color-req: oklch(0.85 0.15 80);
+        --code-bg: oklch(0.16 0.005 250);
       }
     }
     :root[data-theme="carbon"][data-mode="dark"] {
-      --text-primary: #e4e4ed;
-      --text-secondary: #9e9eb8;
-      --surface: #131320;
-      --surface-alt: #1a1a2e;
-      --border: #2a2a40;
-      --border-subtle: #222238;
-      --accent: #818cf8;
-      --accent-subtle: #2a2a50;
-      --color-fetch: #818cf8;
-      --color-parse: #a78bfa;
-      --color-clean: #22d3ee;
-      --color-dedup: #fbbf24;
-      --color-store: #4ade80;
-      --code-bg: #1e1e32;
+      --text-primary: oklch(0.93 0.004 250);
+      --text-secondary: oklch(0.7 0.006 250);
+      --surface: oklch(0.12 0.005 250);
+      --surface-alt: oklch(0.16 0.005 250);
+      --border: oklch(0.25 0.006 250);
+      --border-subtle: oklch(0.2 0.004 250);
+      --accent: oklch(0.7 0.2 255);
+      --accent-subtle: oklch(0.18 0.04 255);
+      --color-stage-1: oklch(0.7 0.12 185);
+      --color-stage-2: oklch(0.68 0.18 270);
+      --color-req: oklch(0.85 0.15 80);
+      --code-bg: oklch(0.16 0.005 250);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -175,8 +162,10 @@
       font-family: var(--font-sans);
       color: var(--text-primary);
       background: var(--surface);
-      line-height: 1.6;
+      line-height: 1.5;
+      font-size: 0.875rem;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .header {
@@ -191,13 +180,13 @@
       z-index: 100;
     }
 
-    .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .header h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
 
     .header-meta {
       display: flex;
       gap: 1rem;
       align-items: center;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       color: var(--text-secondary);
     }
 
@@ -206,7 +195,7 @@
       align-items: center;
       padding: 0.2rem 0.6rem;
       border-radius: 4px;
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       font-weight: 600;
       font-family: var(--font-mono);
     }
@@ -214,7 +203,7 @@
     .badge-version { background: var(--code-bg); color: var(--text-primary); }
 
     .badge-stage {
-      color: #fff;
+      color: oklch(1 0 0);
       font-size: 0.6875rem;
       letter-spacing: 0.04em;
       min-width: 52px;
@@ -227,9 +216,9 @@
     .badge-dedup { background: var(--color-dedup); }
     .badge-store { background: var(--color-store); }
 
-    :root[data-mode="dark"] .badge-stage { color: #0f172a; }
+    :root[data-mode="dark"] .badge-stage { color: oklch(0.13 0.005 250); }
     @media (prefers-color-scheme: dark) {
-      :root:not([data-mode="light"]) .badge-stage { color: #0f172a; }
+      :root:not([data-mode="light"]) .badge-stage { color: oklch(0.13 0.005 250); }
     }
 
     .layout {
@@ -266,10 +255,10 @@
       gap: 0.5rem;
       padding: 0.5rem 1.25rem;
       min-height: 36px;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       color: var(--text-primary);
       text-decoration: none;
-      transition: background 0.1s;
+      transition: background 150ms ease-out;
     }
 
     .sidebar a:hover { background: var(--surface-alt); }
@@ -284,7 +273,7 @@
 
     .intro p {
       color: var(--text-secondary);
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       max-width: 640px;
       margin-bottom: 1rem;
     }
@@ -294,7 +283,7 @@
       padding: 1rem 1.25rem;
       border-radius: 6px;
       font-family: var(--font-mono);
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       line-height: 1.7;
       overflow-x: auto;
       margin-top: 0.75rem;
@@ -312,8 +301,8 @@
     pre code { background: none; padding: 0; }
 
     .section-title {
-      font-size: 1.125rem;
-      font-weight: 700;
+      font-size: 1rem;
+      font-weight: 600;
       margin-bottom: 1.5rem;
       margin-top: 2.5rem;
       letter-spacing: -0.01em;
@@ -343,13 +332,13 @@
     .pipeline-stage + .pipeline-stage { border-left: none; }
 
     .pipeline-stage .stage-name {
-      font-weight: 700;
-      font-size: 0.875rem;
+      font-weight: 600;
+      font-size: 0.8125rem;
       margin-bottom: 0.25rem;
     }
 
     .pipeline-stage .stage-desc {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       color: var(--text-secondary);
       line-height: 1.4;
     }
@@ -376,7 +365,7 @@
       padding: 0.875rem 1.25rem;
       cursor: pointer;
       user-select: none;
-      transition: background 0.1s;
+      transition: background 150ms ease-out;
       width: 100%;
       border: none;
       background: transparent;
@@ -390,13 +379,13 @@
 
     .card-title {
       font-family: var(--font-mono);
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       font-weight: 500;
     }
 
     .card-summary {
       color: var(--text-secondary);
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       margin-left: auto;
     }
 
@@ -410,7 +399,7 @@
     .card.open .card-body { display: block; }
 
     .card-body p {
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       color: var(--text-secondary);
       margin-bottom: 1rem;
     }
@@ -420,7 +409,7 @@
     .ref-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       margin-bottom: 1rem;
     }
 
@@ -443,12 +432,12 @@
 
     .ref-table tr:last-child td { border-bottom: none; }
 
-    .field-name { font-family: var(--font-mono); font-weight: 500; font-size: 0.8125rem; }
-    .field-type { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
-    .field-req { color: var(--color-dedup); font-size: 0.6875rem; font-weight: 600; }
+    .field-name { font-family: var(--font-mono); font-weight: 500; font-size: 0.75rem; }
+    .field-type { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--accent); }
+    .field-req { color: var(--color-req); font-size: 0.6875rem; font-weight: 600; }
 
     .github-link {
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       color: var(--accent);
       text-decoration: none;
       font-weight: 500;
@@ -469,7 +458,7 @@
       background: var(--surface);
       color: var(--text-secondary);
       cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
+      transition: color 150ms ease-out, border-color 150ms ease-out;
     }
 
     .settings-btn:hover { color: var(--text-primary); border-color: var(--text-secondary); }
@@ -483,7 +472,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 24px oklch(0 0 0 / 0.1);
       z-index: 200;
       padding: 1rem;
     }
@@ -512,13 +501,13 @@
       flex: 1;
       padding: 0.375rem 0;
       font-family: var(--font-sans);
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       font-weight: 500;
       border: none;
       cursor: pointer;
       background: var(--surface);
       color: var(--text-secondary);
-      transition: background 0.15s, color 0.15s;
+      transition: background 150ms ease-out, color 150ms ease-out;
     }
 
     .mode-btn + .mode-btn { border-left: 1px solid var(--border); }
@@ -534,7 +523,7 @@
       cursor: pointer;
       padding: 0;
       background: none;
-      transition: border-color 0.15s;
+      transition: border-color 150ms ease-out;
     }
 
     .accent-swatch.active { border-color: var(--text-primary); }
@@ -549,7 +538,7 @@
       padding: 0.375rem 0.625rem;
       cursor: pointer;
       font-family: var(--font-sans);
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--text-primary);
       min-height: 44px;
@@ -574,7 +563,7 @@
     }
 
     .cli-cmd .cli-desc {
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       color: var(--text-secondary);
     }
 
@@ -634,9 +623,9 @@
         <div class="settings-section">
           <div class="settings-label">Theme</div>
           <div class="accent-btns">
-            <button class="accent-swatch" data-theme-opt="slate" title="Slate" onclick="setTheme('slate')"><span class="accent-swatch-inner" style="background:#3b6eb5"></span></button>
-            <button class="accent-swatch" data-theme-opt="stone" title="Stone" onclick="setTheme('stone')"><span class="accent-swatch-inner" style="background:#8b6c3e"></span></button>
-            <button class="accent-swatch" data-theme-opt="carbon" title="Carbon" onclick="setTheme('carbon')"><span class="accent-swatch-inner" style="background:#4338ca"></span></button>
+            <button class="accent-swatch" data-theme-opt="slate" title="Slate" onclick="setTheme('slate')"><span class="accent-swatch-inner" style="background:oklch(0.55 0.18 255)"></span></button>
+            <button class="accent-swatch" data-theme-opt="stone" title="Stone" onclick="setTheme('stone')"><span class="accent-swatch-inner" style="background:oklch(0.55 0.15 50)"></span></button>
+            <button class="accent-swatch" data-theme-opt="carbon" title="Carbon" onclick="setTheme('carbon')"><span class="accent-swatch-inner" style="background:oklch(0.5 0.22 255)"></span></button>
           </div>
         </div>
       </div>
@@ -687,29 +676,29 @@ python -m engine run</code></pre>
 
     <h2 class="section-title" id="pipeline">Pipeline</h2>
 
-    <p style="color: var(--text-secondary); font-size: 0.9375rem; margin-bottom: 1rem;">
+    <p style="color: var(--text-secondary); font-size: 0.8125rem; margin-bottom: 1rem;">
       Every scrape run passes through five stages. Each stage is a separate module that can be tested independently.
     </p>
 
     <div class="pipeline">
       <div class="pipeline-stage">
-        <div class="stage-name" style="color: var(--color-fetch);">Fetch</div>
+        <div class="stage-name" style="color: var(--color-stage-1);">Fetch</div>
         <div class="stage-desc">HTTP request with rate limiting, retry, user-agent rotation</div>
       </div>
       <div class="pipeline-stage">
-        <div class="stage-name" style="color: var(--color-parse);">Parse</div>
+        <div class="stage-name" style="color: var(--color-stage-2);">Parse</div>
         <div class="stage-desc">CSS selectors extract fields from each container element</div>
       </div>
       <div class="pipeline-stage">
-        <div class="stage-name" style="color: var(--color-clean);">Clean</div>
+        <div class="stage-name" style="color: var(--color-stage-1);">Clean</div>
         <div class="stage-desc">Normalize whitespace, unicode, coerce types</div>
       </div>
       <div class="pipeline-stage">
-        <div class="stage-name" style="color: var(--color-dedup);">Dedup</div>
+        <div class="stage-name" style="color: var(--color-stage-2);">Dedup</div>
         <div class="stage-desc">Hash key fields, skip records already in the database</div>
       </div>
       <div class="pipeline-stage">
-        <div class="stage-name" style="color: var(--color-store);">Store</div>
+        <div class="stage-name" style="color: var(--color-stage-1);">Store</div>
         <div class="stage-desc">Insert into DuckDB, export CSV/JSON/Parquet, notify via webhook</div>
       </div>
     </div>
@@ -738,7 +727,7 @@ python -m engine schedule</code></pre>
 
     <h2 class="section-title" id="target-config">Target Config</h2>
 
-    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+    <p style="color: var(--text-secondary); font-size: 0.8125rem; margin-bottom: 1rem;">
       Each target is a YAML file in the <code>targets/</code> directory. This is the full schema:
     </p>
 
@@ -808,7 +797,7 @@ python -m engine schedule</code></pre>
 
     <h2 class="section-title" id="field-config">Field Config</h2>
 
-    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+    <p style="color: var(--text-secondary); font-size: 0.8125rem; margin-bottom: 1rem;">
       Each entry in <code>fields</code> defines how to extract one piece of data from the container element:
     </p>
 
@@ -1058,7 +1047,7 @@ python -m engine export hackernews github-trending -f parquet</code></pre>
 
     <h2 class="section-title" id="docker">Docker</h2>
 
-    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+    <p style="color: var(--text-secondary); font-size: 0.8125rem; margin-bottom: 1rem;">
       The Docker image runs the scheduler by default. Mount <code>data/</code> to persist the
       DuckDB database and <code>targets/</code> to add or modify scrape targets without rebuilding.
     </p>
