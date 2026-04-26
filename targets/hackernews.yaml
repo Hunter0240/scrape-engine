@@ -1,0 +1,19 @@
+name: hackernews
+url: https://news.ycombinator.com
+container: "tr.athing"
+rate_limit: 2.0
+key_fields: [title, url]
+schedule: "*/30 * * * *"
+
+fields:
+  rank:
+    selector: "span.rank"
+    type: int
+  title:
+    selector: "span.titleline > a"
+  url:
+    selector: "span.titleline > a"
+    attribute: href
+    type: url
+  site:
+    selector: "span.sitestr"

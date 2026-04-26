@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scrape Engine -- Documentation</title>
+  <meta name="description" content="A configurable web scraping engine. Define targets in YAML, the engine handles fetching, parsing, dedup, storage, and notifications.">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root,
+    :root[data-theme="slate"] {
+      --text-primary: #1b2a4a;
+      --text-secondary: #475569;
+      --surface: #f8fafc;
+      --surface-alt: #f1f5f9;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      --accent: #3b6eb5;
+      --accent-subtle: #dbeafe;
+      --color-fetch: #2563a8;
+      --color-parse: #7c3aed;
+      --color-clean: #0891b2;
+      --color-dedup: #d97706;
+      --color-store: #16a34a;
+      --code-bg: #e8edf4;
+      --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    :root[data-theme="stone"] {
+      --text-primary: #292524;
+      --text-secondary: #57534e;
+      --surface: #fafaf9;
+      --surface-alt: #f5f5f4;
+      --border: #d6d3d1;
+      --border-subtle: #e7e5e4;
+      --accent: #8b6c3e;
+      --accent-subtle: #f5f0e8;
+      --color-fetch: #78716c;
+      --color-parse: #7c6a4e;
+      --color-clean: #5c8a7a;
+      --color-dedup: #9a7b4f;
+      --color-store: #4d7c5f;
+      --code-bg: #ece8e3;
+    }
+
+    :root[data-theme="carbon"] {
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --surface: #fcfcfd;
+      --surface-alt: #f4f5f7;
+      --border: #c4c8d0;
+      --border-subtle: #dfe1e6;
+      --accent: #4338ca;
+      --accent-subtle: #e0e7ff;
+      --color-fetch: #3730a3;
+      --color-parse: #6d28d9;
+      --color-clean: #0e7490;
+      --color-dedup: #b45309;
+      --color-store: #166534;
+      --code-bg: #ebedf2;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-mode="light"]),
+      :root[data-theme="slate"]:not([data-mode="light"]) {
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --surface: #0f172a;
+        --surface-alt: #1e293b;
+        --border: #334155;
+        --border-subtle: #283548;
+        --accent: #60a5fa;
+        --accent-subtle: #1e3a5f;
+        --color-fetch: #60a5fa;
+        --color-parse: #a78bfa;
+        --color-clean: #22d3ee;
+        --color-dedup: #fbbf24;
+        --color-store: #4ade80;
+        --code-bg: #1e293b;
+      }
+    }
+    :root[data-mode="dark"],
+    :root[data-theme="slate"][data-mode="dark"] {
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --surface: #0f172a;
+      --surface-alt: #1e293b;
+      --border: #334155;
+      --border-subtle: #283548;
+      --accent: #60a5fa;
+      --accent-subtle: #1e3a5f;
+      --color-fetch: #60a5fa;
+      --color-parse: #a78bfa;
+      --color-clean: #22d3ee;
+      --color-dedup: #fbbf24;
+      --color-store: #4ade80;
+      --code-bg: #1e293b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="stone"]:not([data-mode="light"]) {
+        --text-primary: #e7e5e4;
+        --text-secondary: #a8a29e;
+        --surface: #1c1917;
+        --surface-alt: #292524;
+        --border: #44403c;
+        --border-subtle: #352f2b;
+        --accent: #d4a574;
+        --accent-subtle: #3d2e1a;
+        --color-fetch: #a8a29e;
+        --color-parse: #c4a882;
+        --color-clean: #6ee7a0;
+        --color-dedup: #d4a574;
+        --color-store: #6ee7a0;
+        --code-bg: #292524;
+      }
+    }
+    :root[data-theme="stone"][data-mode="dark"] {
+      --text-primary: #e7e5e4;
+      --text-secondary: #a8a29e;
+      --surface: #1c1917;
+      --surface-alt: #292524;
+      --border: #44403c;
+      --border-subtle: #352f2b;
+      --accent: #d4a574;
+      --accent-subtle: #3d2e1a;
+      --color-fetch: #a8a29e;
+      --color-parse: #c4a882;
+      --color-clean: #6ee7a0;
+      --color-dedup: #d4a574;
+      --color-store: #6ee7a0;
+      --code-bg: #292524;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="carbon"]:not([data-mode="light"]) {
+        --text-primary: #e4e4ed;
+        --text-secondary: #9e9eb8;
+        --surface: #131320;
+        --surface-alt: #1a1a2e;
+        --border: #2a2a40;
+        --border-subtle: #222238;
+        --accent: #818cf8;
+        --accent-subtle: #2a2a50;
+        --color-fetch: #818cf8;
+        --color-parse: #a78bfa;
+        --color-clean: #22d3ee;
+        --color-dedup: #fbbf24;
+        --color-store: #4ade80;
+        --code-bg: #1e1e32;
+      }
+    }
+    :root[data-theme="carbon"][data-mode="dark"] {
+      --text-primary: #e4e4ed;
+      --text-secondary: #9e9eb8;
+      --surface: #131320;
+      --surface-alt: #1a1a2e;
+      --border: #2a2a40;
+      --border-subtle: #222238;
+      --accent: #818cf8;
+      --accent-subtle: #2a2a50;
+      --color-fetch: #818cf8;
+      --color-parse: #a78bfa;
+      --color-clean: #22d3ee;
+      --color-dedup: #fbbf24;
+      --color-store: #4ade80;
+      --code-bg: #1e1e32;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background: var(--surface);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      z-index: 100;
+    }
+
+    .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    .header-meta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .badge-version { background: var(--code-bg); color: var(--text-primary); }
+
+    .badge-stage {
+      color: #fff;
+      font-size: 0.6875rem;
+      letter-spacing: 0.04em;
+      min-width: 52px;
+      justify-content: center;
+    }
+
+    .badge-fetch { background: var(--color-fetch); }
+    .badge-parse { background: var(--color-parse); }
+    .badge-clean { background: var(--color-clean); }
+    .badge-dedup { background: var(--color-dedup); }
+    .badge-store { background: var(--color-store); }
+
+    :root[data-mode="dark"] .badge-stage { color: #0f172a; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-mode="light"]) .badge-stage { color: #0f172a; }
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 65px);
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      padding: 0 1.25rem;
+      margin-bottom: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .sidebar h3:first-child { margin-top: 0; }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      min-height: 36px;
+      font-size: 0.8125rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: background 0.1s;
+    }
+
+    .sidebar a:hover { background: var(--surface-alt); }
+
+    .content { padding: 2rem 3rem; max-width: 860px; }
+
+    .intro {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .intro p {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      max-width: 640px;
+      margin-bottom: 1rem;
+    }
+
+    pre, .code-block {
+      background: var(--code-bg);
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin-top: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+    }
+
+    pre code { background: none; padding: 0; }
+
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      margin-top: 2.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .section-title:first-of-type { margin-top: 0; }
+
+    .pipeline {
+      display: flex;
+      gap: 0;
+      align-items: stretch;
+      margin: 1.5rem 0 2rem;
+      flex-wrap: wrap;
+    }
+
+    .pipeline-stage {
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .pipeline-stage:first-child { border-radius: 8px 0 0 8px; }
+    .pipeline-stage:last-child { border-radius: 0 8px 8px 0; }
+    .pipeline-stage + .pipeline-stage { border-left: none; }
+
+    .pipeline-stage .stage-name {
+      font-weight: 700;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .pipeline-stage .stage-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .pipeline-arrow {
+      display: flex;
+      align-items: center;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      padding: 0 0.125rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.1s;
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      text-align: left;
+    }
+
+    .card-header:hover { background: var(--surface-alt); }
+
+    .card-title {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .card-summary {
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      margin-left: auto;
+    }
+
+    .card-body {
+      display: none;
+      padding: 1.25rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface-alt);
+    }
+
+    .card.open .card-body { display: block; }
+
+    .card-body p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      margin-bottom: 1rem;
+    }
+
+    .ref-table th {
+      text-align: left;
+      font-weight: 600;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+    }
+
+    .ref-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .ref-table tr:last-child td { border-bottom: none; }
+
+    .field-name { font-family: var(--font-mono); font-weight: 500; font-size: 0.8125rem; }
+    .field-type { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
+    .field-req { color: var(--color-dedup); font-size: 0.6875rem; font-weight: 600; }
+
+    .github-link {
+      font-size: 0.8125rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .github-link:hover { text-decoration: underline; }
+
+    .settings-wrap { position: relative; }
+
+    .settings-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .settings-btn:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+    .settings-panel {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 240px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      z-index: 200;
+      padding: 1rem;
+    }
+
+    .settings-panel.open { display: block; }
+    .settings-section { margin-bottom: 1rem; }
+    .settings-section:last-child { margin-bottom: 0; }
+
+    .settings-label {
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .mode-btns {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 0.375rem 0;
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mode-btn + .mode-btn { border-left: 1px solid var(--border); }
+    .mode-btn.active { background: var(--text-primary); color: var(--surface); }
+
+    .accent-btns { display: flex; gap: 0.5rem; }
+
+    .accent-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      padding: 0;
+      background: none;
+      transition: border-color 0.15s;
+    }
+
+    .accent-swatch.active { border-color: var(--text-primary); }
+    .accent-swatch-inner { display: block; width: 100%; height: 100%; border-radius: 50%; }
+    .settings-divider { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
+
+    .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.375rem 0.625rem;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-height: 44px;
+      min-width: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cli-cmd {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .cli-cmd:last-child { border-bottom: none; }
+
+    .cli-cmd code {
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .cli-cmd .cli-desc {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        display: none;
+        position: fixed;
+        top: 57px;
+        left: 0;
+        right: 0;
+        height: auto;
+        max-height: calc(100vh - 57px);
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        z-index: 99;
+        padding: 0.75rem 0;
+      }
+      .sidebar.open { display: block; }
+      .content { padding: 1.5rem; }
+      .header { padding: 0.75rem 1rem; }
+      .mobile-nav-toggle { display: inline-flex; }
+      .pipeline { flex-direction: column; }
+      .pipeline-stage:first-child { border-radius: 8px 8px 0 0; }
+      .pipeline-stage:last-child { border-radius: 0 0 8px 8px; }
+      .pipeline-stage + .pipeline-stage { border-left: 1px solid var(--border); border-top: none; }
+      .pipeline-arrow { transform: rotate(90deg); justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <h1>Scrape Engine</h1>
+  <div class="header-meta">
+    <button class="mobile-nav-toggle" aria-expanded="false" aria-controls="sidebar-nav" onclick="toggleMobileNav()">Menu</button>
+    <span class="badge badge-version">v1.0.0</span>
+    <a href="https://github.com/Hunter0240/scrape-engine" class="github-link">GitHub</a>
+    <div class="settings-wrap">
+      <button class="settings-btn" aria-label="Settings" aria-expanded="false" onclick="toggleSettings(this)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <div class="settings-panel" id="settings-panel" role="dialog" aria-label="Settings">
+        <div class="settings-section">
+          <div class="settings-label">Mode</div>
+          <div class="mode-btns">
+            <button class="mode-btn" data-mode="auto" onclick="setMode('auto')">Auto</button>
+            <button class="mode-btn" data-mode="light" onclick="setMode('light')">Light</button>
+            <button class="mode-btn" data-mode="dark" onclick="setMode('dark')">Dark</button>
+          </div>
+        </div>
+        <hr class="settings-divider">
+        <div class="settings-section">
+          <div class="settings-label">Theme</div>
+          <div class="accent-btns">
+            <button class="accent-swatch" data-theme-opt="slate" title="Slate" onclick="setTheme('slate')"><span class="accent-swatch-inner" style="background:#3b6eb5"></span></button>
+            <button class="accent-swatch" data-theme-opt="stone" title="Stone" onclick="setTheme('stone')"><span class="accent-swatch-inner" style="background:#8b6c3e"></span></button>
+            <button class="accent-swatch" data-theme-opt="carbon" title="Carbon" onclick="setTheme('carbon')"><span class="accent-swatch-inner" style="background:#4338ca"></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar-nav" aria-label="Documentation navigation">
+    <h3>Overview</h3>
+    <a href="#introduction">Introduction</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#quick-start">Quick Start</a>
+    <h3>Configuration</h3>
+    <a href="#target-config">Target Config</a>
+    <a href="#field-config">Field Config</a>
+    <a href="#example-targets">Example Targets</a>
+    <h3>Pipeline Stages</h3>
+    <a href="#stage-fetch">Fetch</a>
+    <a href="#stage-parse">Parse</a>
+    <a href="#stage-clean">Clean</a>
+    <a href="#stage-dedup">Deduplicate</a>
+    <a href="#stage-store">Store</a>
+    <h3>CLI Reference</h3>
+    <a href="#cli-run">run</a>
+    <a href="#cli-schedule">schedule</a>
+    <a href="#cli-targets">targets</a>
+    <a href="#cli-export">export</a>
+    <h3>Deployment</h3>
+    <a href="#docker">Docker</a>
+  </nav>
+
+  <main class="content">
+    <div class="intro" id="introduction">
+      <p>
+        A configurable web scraping engine in Python. Define what to scrape in YAML --
+        the engine handles fetching, parsing, cleaning, deduplication, storage, and notifications.
+        No custom code per target.
+      </p>
+      <p>
+        Built with httpx (async HTTP), selectolax (C-backed HTML parser), and DuckDB
+        (columnar storage with native Parquet export). Designed for freelance data collection
+        work where each client gets a YAML config file, not a codebase.
+      </p>
+      <pre><code>pip install -r requirements.txt
+python -m engine run</code></pre>
+    </div>
+
+    <h2 class="section-title" id="pipeline">Pipeline</h2>
+
+    <p style="color: var(--text-secondary); font-size: 0.9375rem; margin-bottom: 1rem;">
+      Every scrape run passes through five stages. Each stage is a separate module that can be tested independently.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipeline-stage">
+        <div class="stage-name" style="color: var(--color-fetch);">Fetch</div>
+        <div class="stage-desc">HTTP request with rate limiting, retry, user-agent rotation</div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-name" style="color: var(--color-parse);">Parse</div>
+        <div class="stage-desc">CSS selectors extract fields from each container element</div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-name" style="color: var(--color-clean);">Clean</div>
+        <div class="stage-desc">Normalize whitespace, unicode, coerce types</div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-name" style="color: var(--color-dedup);">Dedup</div>
+        <div class="stage-desc">Hash key fields, skip records already in the database</div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-name" style="color: var(--color-store);">Store</div>
+        <div class="stage-desc">Insert into DuckDB, export CSV/JSON/Parquet, notify via webhook</div>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="quick-start">Quick Start</h2>
+
+    <pre><code># List configured targets
+python -m engine targets
+
+# Run all targets once
+python -m engine run
+
+# Run a specific target
+python -m engine run targets/hackernews.yaml
+
+# Run again -- dedup catches duplicates
+python -m engine run
+# -> hackernews: 30 scraped, 0 new, 30 duplicates
+
+# Export stored data
+python -m engine export hackernews -f csv
+python -m engine export hackernews -f parquet
+
+# Run on cron schedules (long-running)
+python -m engine schedule</code></pre>
+
+    <h2 class="section-title" id="target-config">Target Config</h2>
+
+    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+      Each target is a YAML file in the <code>targets/</code> directory. This is the full schema:
+    </p>
+
+    <table class="ref-table">
+      <tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr>
+      <tr>
+        <td class="field-name">name</td>
+        <td class="field-type">string</td>
+        <td class="field-req">required</td>
+        <td>Unique identifier, used as the DuckDB table name</td>
+      </tr>
+      <tr>
+        <td class="field-name">url</td>
+        <td class="field-type">string</td>
+        <td class="field-req">required</td>
+        <td>Page URL to scrape</td>
+      </tr>
+      <tr>
+        <td class="field-name">container</td>
+        <td class="field-type">string</td>
+        <td class="field-req">required</td>
+        <td>CSS selector for the repeating element wrapping each record</td>
+      </tr>
+      <tr>
+        <td class="field-name">fields</td>
+        <td class="field-type">map</td>
+        <td class="field-req">required</td>
+        <td>Map of field name to selector config (see below)</td>
+      </tr>
+      <tr>
+        <td class="field-name">rate_limit</td>
+        <td class="field-type">float</td>
+        <td></td>
+        <td>Minimum seconds between requests (default: 1.0)</td>
+      </tr>
+      <tr>
+        <td class="field-name">max_retries</td>
+        <td class="field-type">int</td>
+        <td></td>
+        <td>Retry count for failed requests (default: 3)</td>
+      </tr>
+      <tr>
+        <td class="field-name">key_fields</td>
+        <td class="field-type">list[string]</td>
+        <td></td>
+        <td>Fields used for dedup hashing (default: all fields)</td>
+      </tr>
+      <tr>
+        <td class="field-name">schedule</td>
+        <td class="field-type">string</td>
+        <td></td>
+        <td>Cron expression for scheduled runs</td>
+      </tr>
+      <tr>
+        <td class="field-name">webhook_url</td>
+        <td class="field-type">string</td>
+        <td></td>
+        <td>Discord or Slack webhook for run notifications</td>
+      </tr>
+      <tr>
+        <td class="field-name">headers</td>
+        <td class="field-type">map</td>
+        <td></td>
+        <td>Extra HTTP headers to include in requests</td>
+      </tr>
+    </table>
+
+    <h2 class="section-title" id="field-config">Field Config</h2>
+
+    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+      Each entry in <code>fields</code> defines how to extract one piece of data from the container element:
+    </p>
+
+    <table class="ref-table">
+      <tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr>
+      <tr>
+        <td class="field-name">selector</td>
+        <td class="field-type">string</td>
+        <td class="field-req">required</td>
+        <td>CSS selector relative to the container</td>
+      </tr>
+      <tr>
+        <td class="field-name">attribute</td>
+        <td class="field-type">string</td>
+        <td></td>
+        <td>Extract an HTML attribute (e.g. <code>href</code>) instead of text content</td>
+      </tr>
+      <tr>
+        <td class="field-name">type</td>
+        <td class="field-type">string</td>
+        <td></td>
+        <td><code>str</code>, <code>int</code>, <code>float</code>, or <code>url</code> (default: <code>str</code>)</td>
+      </tr>
+    </table>
+
+    <h2 class="section-title" id="example-targets">Example Targets</h2>
+
+    <div class="card" id="target-hackernews">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="card-title">hackernews.yaml</span>
+        <span class="card-summary">Hacker News front page -- every 30 minutes</span>
+      </button>
+      <div class="card-body">
+        <pre><code>name: hackernews
+url: https://news.ycombinator.com
+container: "tr.athing"
+rate_limit: 2.0
+key_fields: [title, url]
+schedule: "*/30 * * * *"
+
+fields:
+  rank:
+    selector: "span.rank"
+    type: int
+  title:
+    selector: "span.titleline > a"
+  url:
+    selector: "span.titleline > a"
+    attribute: href
+    type: url
+  site:
+    selector: "span.sitestr"</code></pre>
+      </div>
+    </div>
+
+    <div class="card" id="target-github">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="card-title">github-trending.yaml</span>
+        <span class="card-summary">GitHub trending repos -- every 6 hours</span>
+      </button>
+      <div class="card-body">
+        <pre><code>name: github-trending
+url: https://github.com/trending
+container: "article.Box-row"
+rate_limit: 2.0
+key_fields: [repo]
+schedule: "0 */6 * * *"
+
+fields:
+  repo:
+    selector: "h2 a"
+    attribute: href
+    type: url
+  description:
+    selector: "p"
+  language:
+    selector: "span[itemprop='programmingLanguage']"
+  stars_today:
+    selector: "span.d-inline-block.float-sm-right"</code></pre>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="stages">Pipeline Stages</h2>
+
+    <div class="card" id="stage-fetch">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="badge badge-stage badge-fetch">FETCH</span>
+        <span class="card-title">fetcher.py</span>
+        <span class="card-summary">Async HTTP with rate limiting and retry</span>
+      </button>
+      <div class="card-body">
+        <p>
+          Sends an async HTTP GET via httpx. Respects the target's <code>rate_limit</code>
+          (minimum seconds between requests to the same target). Rotates through five
+          real browser user-agent strings to avoid bot detection.
+        </p>
+        <p>
+          On network errors or HTTP 429 (rate limited), retries with exponential backoff:
+          1s, 2s, 4s. Gives up after <code>max_retries</code> attempts. HTTP errors other
+          than 429 are raised immediately.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" id="stage-parse">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="badge badge-stage badge-parse">PARSE</span>
+        <span class="card-title">parser.py</span>
+        <span class="card-summary">CSS selector extraction with container pattern</span>
+      </button>
+      <div class="card-body">
+        <p>
+          Uses selectolax (a C-backed HTML parser) for speed. Applies the <strong>container
+          pattern</strong>: first find all elements matching the <code>container</code> selector,
+          then extract each field relative to its container. This scopes selectors to
+          individual records rather than the entire page.
+        </p>
+        <p>
+          If a field selector matches nothing inside a container, that field is set to
+          <code>null</code> -- pages are messy and missing data shouldn't crash the pipeline.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" id="stage-clean">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="badge badge-stage badge-clean">CLEAN</span>
+        <span class="card-title">cleaner.py</span>
+        <span class="card-summary">Whitespace, unicode, type coercion</span>
+      </button>
+      <div class="card-body">
+        <p>
+          Raw scraped text is often messy. The cleaner applies three transformations:
+        </p>
+        <p>
+          <strong>Unicode normalization</strong> (NFKC) converts compatibility characters
+          like non-breaking spaces and full-width digits to their standard forms.
+          <strong>Whitespace collapsing</strong> turns runs of spaces, tabs, and newlines
+          into a single space. <strong>Type coercion</strong> converts strings to
+          <code>int</code> or <code>float</code> based on the field's <code>type</code>
+          config, stripping non-numeric characters first.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" id="stage-dedup">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="badge badge-stage badge-dedup">DEDUP</span>
+        <span class="card-title">deduper.py</span>
+        <span class="card-summary">Content hashing against DuckDB</span>
+      </button>
+      <div class="card-body">
+        <p>
+          Scrapers run repeatedly and the same data shows up again. The deduper computes
+          a SHA-256 hash from the target's <code>key_fields</code> (or all fields if not
+          specified) and attaches it to each record as <code>_hash</code>.
+        </p>
+        <p>
+          The storage layer uses <code>_hash</code> as a primary key with
+          <code>INSERT OR IGNORE</code>, so duplicate records are silently skipped at
+          the database level. The run summary reports how many records were new vs. duplicates.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" id="stage-store">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="badge badge-stage badge-store">STORE</span>
+        <span class="card-title">storage.py</span>
+        <span class="card-summary">DuckDB with CSV, JSON, Parquet export</span>
+      </button>
+      <div class="card-body">
+        <p>
+          DuckDB is a columnar analytical database -- like SQLite but optimized for
+          the kind of tabular data scraping produces. Tables are created automatically
+          from the target's field definitions. Each record gets a <code>_scraped_at</code>
+          timestamp.
+        </p>
+        <p>
+          Export to CSV, JSON, or Parquet via the CLI. Parquet export uses DuckDB's
+          native <code>COPY</code> command for speed and produces files that load
+          directly into pandas, Polars, or BigQuery.
+        </p>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="cli">CLI Reference</h2>
+
+    <div class="card" id="cli-run">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="card-title">python -m engine run</span>
+        <span class="card-summary">Run targets once</span>
+      </button>
+      <div class="card-body">
+        <p>Run one or more targets immediately. With no arguments, runs all targets in <code>targets/</code>.</p>
+        <pre><code># Run all targets
+python -m engine run
+
+# Run specific targets
+python -m engine run targets/hackernews.yaml targets/github-trending.yaml</code></pre>
+      </div>
+    </div>
+
+    <div class="card" id="cli-schedule">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="card-title">python -m engine schedule</span>
+        <span class="card-summary">Run on cron schedules</span>
+      </button>
+      <div class="card-body">
+        <p>
+          Starts a long-running process that fires each target on its configured
+          <code>schedule</code> (a cron expression). Targets without a schedule are skipped.
+          The loop checks every 30 seconds.
+        </p>
+        <pre><code>python -m engine schedule
+# INFO: scheduler starting with 2 target(s):
+#   hackernews (*/30 * * * *), github-trending (0 */6 * * *)</code></pre>
+      </div>
+    </div>
+
+    <div class="card" id="cli-targets">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="card-title">python -m engine targets</span>
+        <span class="card-summary">List configured targets</span>
+      </button>
+      <div class="card-body">
+        <p>List all YAML target files with their URL, fields, and schedule.</p>
+        <pre><code>python -m engine targets
+# hackernews
+#   url:      https://news.ycombinator.com
+#   fields:   rank, title, url, site
+#   schedule: */30 * * * *</code></pre>
+      </div>
+    </div>
+
+    <div class="card" id="cli-export">
+      <button class="card-header" aria-expanded="false" onclick="toggleCard(this)">
+        <span class="card-title">python -m engine export</span>
+        <span class="card-summary">Export stored data</span>
+      </button>
+      <div class="card-body">
+        <p>Export one or more targets from DuckDB to a file. Supports CSV, JSON, and Parquet.</p>
+        <pre><code>python -m engine export hackernews -f csv
+python -m engine export hackernews github-trending -f parquet</code></pre>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="docker">Docker</h2>
+
+    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+      The Docker image runs the scheduler by default. Mount <code>data/</code> to persist the
+      DuckDB database and <code>targets/</code> to add or modify scrape targets without rebuilding.
+    </p>
+
+    <pre><code>docker compose up --build</code></pre>
+
+    <pre><code># docker-compose.yml
+services:
+  scraper:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./targets:/app/targets
+    restart: unless-stopped</code></pre>
+
+  </main>
+</div>
+
+<script>
+function toggleCard(btn) {
+  var card = btn.parentElement;
+  var isOpen = card.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+function toggleMobileNav() {
+  var sidebar = document.getElementById('sidebar-nav');
+  var btn = document.querySelector('.mobile-nav-toggle');
+  var isOpen = sidebar.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+document.getElementById('sidebar-nav').addEventListener('click', function(e) {
+  if (e.target.tagName === 'A' && window.innerWidth <= 768) {
+    this.classList.remove('open');
+    document.querySelector('.mobile-nav-toggle').setAttribute('aria-expanded', 'false');
+  }
+});
+
+function toggleSettings(btn) {
+  var panel = document.getElementById('settings-panel');
+  var isOpen = panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+document.addEventListener('mousedown', function(e) {
+  var wrap = document.querySelector('.settings-wrap');
+  var panel = document.getElementById('settings-panel');
+  if (wrap && !wrap.contains(e.target) && panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    wrap.querySelector('.settings-btn').setAttribute('aria-expanded', 'false');
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var panel = document.getElementById('settings-panel');
+    if (panel.classList.contains('open')) {
+      panel.classList.remove('open');
+      document.querySelector('.settings-btn').setAttribute('aria-expanded', 'false');
+      document.querySelector('.settings-btn').focus();
+    }
+  }
+});
+
+function setMode(mode) {
+  var root = document.documentElement;
+  if (mode === 'auto') { root.removeAttribute('data-mode'); }
+  else { root.setAttribute('data-mode', mode); }
+  localStorage.setItem('docs-mode', mode);
+  updateModeButtons(mode);
+}
+
+function setTheme(theme) {
+  var root = document.documentElement;
+  if (theme === 'slate') { root.removeAttribute('data-theme'); }
+  else { root.setAttribute('data-theme', theme); }
+  localStorage.setItem('docs-theme', theme);
+  updateThemeButtons(theme);
+}
+
+function updateModeButtons(mode) {
+  document.querySelectorAll('.mode-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+  });
+}
+
+function updateThemeButtons(theme) {
+  document.querySelectorAll('.accent-swatch').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === theme);
+  });
+}
+
+(function initSettings() {
+  var mode = localStorage.getItem('docs-mode') || 'auto';
+  var theme = localStorage.getItem('docs-theme') || 'slate';
+  if (mode !== 'auto') document.documentElement.setAttribute('data-mode', mode);
+  if (theme !== 'slate') document.documentElement.setAttribute('data-theme', theme);
+  updateModeButtons(mode);
+  updateThemeButtons(theme);
+})();
+</script>
+
+</body>
+</html>

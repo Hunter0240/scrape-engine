@@ -1,0 +1,13 @@
+services:
+  scraper:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./targets:/app/targets
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

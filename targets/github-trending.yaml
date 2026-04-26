@@ -1,0 +1,18 @@
+name: github-trending
+url: https://github.com/trending
+container: "article.Box-row"
+rate_limit: 2.0
+key_fields: [repo]
+schedule: "0 */6 * * *"
+
+fields:
+  repo:
+    selector: "h2 a"
+    attribute: href
+    type: url
+  description:
+    selector: "p"
+  language:
+    selector: "span[itemprop='programmingLanguage']"
+  stars_today:
+    selector: "span.d-inline-block.float-sm-right"
