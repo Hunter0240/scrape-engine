@@ -36,10 +36,19 @@ class TargetConfig(BaseModel):
     )
 
 
+def _resolve_env_vars(value: str | None) -> str | None:
+    if value and value.startswith("${") and value.endswith("}"):
+        env_name = value[2:-1]
+        return os.environ.get(env_name)
+    return value
+
+
 def load_target(path: str | Path) -> TargetConfig:
     path = Path(path)
     with open(path) as f:
         raw = yaml.safe_load(f)
+    if "webhook_url" in raw:
+        raw["webhook_url"] = _resolve_env_vars(raw["webhook_url"])
     return TargetConfig(**raw)
 
 

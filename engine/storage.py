@@ -71,9 +71,17 @@ class Storage:
         except duckdb.CatalogException:
             return 0
 
-    def export_csv(self, target_name: str, path: str | Path) -> None:
-        path = Path(path)
+    @staticmethod
+    def _safe_export_path(path: str | Path) -> Path:
+        path = Path(path).resolve()
+        data_dir = Path(__file__).resolve().parent.parent / "data"
+        if not str(path).startswith(str(data_dir.resolve())):
+            raise ValueError(f"Export path must be inside data/: {path}")
         path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def export_csv(self, target_name: str, path: str | Path) -> None:
+        path = self._safe_export_path(path)
         tbl = self._q(target_name)
         self.conn.execute(
             f"COPY (SELECT * FROM {tbl} ORDER BY _scraped_at) "
@@ -82,8 +90,7 @@ class Storage:
         log.info("exported %s to %s", target_name, path)
 
     def export_json(self, target_name: str, path: str | Path) -> None:
-        path = Path(path)
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path = self._safe_export_path(path)
         tbl = self._q(target_name)
         rows = self.conn.execute(
             f"SELECT * FROM {tbl} ORDER BY _scraped_at"
@@ -93,8 +100,7 @@ class Storage:
         log.info("exported %s to %s", target_name, path)
 
     def export_parquet(self, target_name: str, path: str | Path) -> None:
-        path = Path(path)
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path = self._safe_export_path(path)
         tbl = self._q(target_name)
         self.conn.execute(
             f"COPY (SELECT * FROM {tbl} ORDER BY _scraped_at) "

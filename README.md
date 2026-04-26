@@ -2,8 +2,6 @@
 
 A configurable web scraping engine in Python. Define scrape targets in YAML -- the engine handles fetching, parsing, cleaning, deduplication, storage, and notifications.
 
-**[Documentation](https://hunter0240.github.io/scrape-engine/)**
-
 ## Features
 
 - **YAML target configs** -- define what to scrape without writing Python
