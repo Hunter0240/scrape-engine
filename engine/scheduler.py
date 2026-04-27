@@ -48,8 +48,11 @@ async def run_scheduled(targets: list[TargetConfig] | None = None) -> None:
                         log.exception("scheduler error on %s", target.name)
                     next_runs[target.name] = iters[target.name].get_next(datetime)
 
-            await asyncio.sleep(30)
+            nearest = min(next_runs.values())
+            sleep_secs = max(1, min((nearest - datetime.now()).total_seconds(), 30))
+            await asyncio.sleep(sleep_secs)
     except asyncio.CancelledError:
         log.info("scheduler stopped")
     finally:
+        await fetcher.close()
         storage.close()

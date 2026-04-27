@@ -23,6 +23,7 @@ USER_AGENTS = [
 class Fetcher:
     def __init__(self) -> None:
         self._last_request_at: dict[str, float] = {}
+        self._client = httpx.AsyncClient(follow_redirects=True, timeout=30.0)
 
     async def _wait_for_rate_limit(self, target: TargetConfig) -> None:
         last = self._last_request_at.get(target.name, 0.0)
@@ -41,13 +42,10 @@ class Fetcher:
         last_exc: Exception | None = None
         for attempt in range(1, target.max_retries + 1):
             try:
-                async with httpx.AsyncClient() as client:
-                    resp = await client.get(
-                        target.url,
-                        headers=self._build_headers(target),
-                        follow_redirects=True,
-                        timeout=30.0,
-                    )
+                resp = await self._client.get(
+                    target.url,
+                    headers=self._build_headers(target),
+                )
                 self._last_request_at[target.name] = time.monotonic()
 
                 if resp.status_code == 429:
@@ -85,3 +83,6 @@ class Fetcher:
         raise RuntimeError(
             f"{target.name}: failed after {target.max_retries} retries"
         ) from last_exc
+
+    async def close(self) -> None:
+        await self._client.aclose()

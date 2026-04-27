@@ -6,20 +6,23 @@ import unicodedata
 from engine.config import TargetConfig
 
 _WHITESPACE_RUN = re.compile(r"\s+")
+_NON_DIGIT = re.compile(r"[^\d\-]")
+_NON_FLOAT = re.compile(r"[^\d.\-]")
 
 
 def _normalize(text: str) -> str:
-    text = unicodedata.normalize("NFKC", text)
+    if not text.isascii():
+        text = unicodedata.normalize("NFKC", text)
     text = _WHITESPACE_RUN.sub(" ", text)
     return text.strip()
 
 
 def _coerce(value: str, field_type: str) -> str | int | float:
     if field_type == "int":
-        stripped = re.sub(r"[^\d\-]", "", value)
+        stripped = _NON_DIGIT.sub("", value)
         return int(stripped) if stripped else 0
     if field_type == "float":
-        stripped = re.sub(r"[^\d.\-]", "", value)
+        stripped = _NON_FLOAT.sub("", value)
         return float(stripped) if stripped else 0.0
     if field_type == "url":
         return value.strip()

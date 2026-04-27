@@ -52,15 +52,15 @@ class Storage:
             f"INSERT OR IGNORE INTO {tbl} ({', '.join(cols)}) "
             f"VALUES ({placeholders})"
         )
-        inserted = 0
-        for record in records:
-            values = [record["_hash"]] + [record.get(c) for c in cols[1:]]
-            try:
-                self.conn.execute(sql, values)
-                inserted += 1
-            except duckdb.ConstraintException:
-                pass
-        return inserted
+        values = [
+            [record["_hash"]] + [record.get(c) for c in cols[1:]]
+            for record in records
+        ]
+        try:
+            self.conn.executemany(sql, values)
+        except duckdb.ConstraintException:
+            pass
+        return len(records)
 
     def count(self, target_name: str) -> int:
         try:

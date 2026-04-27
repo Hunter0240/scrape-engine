@@ -27,10 +27,8 @@ async def run_target(
     records = add_hashes(records, target)
 
     before = storage.count(target.name)
-    storage.insert(target, records)
-    after = storage.count(target.name)
-
-    new_records = after - before
+    inserted = storage.insert(target, records)
+    new_records = inserted if before == 0 else storage.count(target.name) - before
     summary = RunSummary(
         target_name=target.name,
         total_scraped=len(records),
@@ -58,14 +56,14 @@ async def run(
         targets = load_all_targets()
     fetcher = Fetcher()
     storage = Storage(db_path)
-    summaries = []
     try:
-        for target in targets:
-            summary = await run_target(target, fetcher, storage)
-            summaries.append(summary)
+        summaries = await asyncio.gather(
+            *[run_target(target, fetcher, storage) for target in targets]
+        )
     finally:
+        await fetcher.close()
         storage.close()
-    return summaries
+    return list(summaries)
 
 
 def main() -> None:
